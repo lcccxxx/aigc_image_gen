@@ -1,12 +1,12 @@
 # AIGC 图片生成器
 
-> 基于通义万相大模型的 AI 图片生成应用 | AIGC 实践项目
+> 基于 Pollinations.ai 免费文生图 API 的 AI 图片生成应用 | AIGC 实践项目
 
-输入文字描述，AI 自动生成对应图片。支持多种风格（水彩、油画、卡通、赛博朋克、水墨等）和尺寸选择。
+输入文字描述，AI 自动生成对应图片。支持多种风格（水彩、油画、卡通、赛博朋克、水墨等）和尺寸选择。**完全免费，无需注册。**
 
 ### 技术栈
 
-`Python` `Streamlit` `通义万相 API` `DashScope`
+`Python` `Streamlit` `Pollinations.ai API`
 
 ### 快速开始
 

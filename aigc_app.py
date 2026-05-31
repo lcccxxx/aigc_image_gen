@@ -1,26 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-校园表情包/AI图片生成器 —— AIGC实践项目
-调用通义万相 API，输入文字描述即可生成图片
+AIGC图片生成器 —— 文生图实践项目
+调用 Pollinations.ai 免费 API，输入文字描述即可生成图片
 """
 import streamlit as st
-import dashscope
-from dashscope import ImageSynthesis
 import requests
-import io
-import os
 import datetime
+import urllib.parse
 
 # ---------- 配置 ----------
 st.set_page_config(page_title="AIGC图片生成器", page_icon="🎨", layout="centered")
 
-# API Key（从配置文件读取）
-from config import DASHSCOPE_API_KEY
-dashscope.api_key = DASHSCOPE_API_KEY
-
 # ---------- 界面 ----------
 st.title("🎨 AIGC 图片生成器")
-st.caption("基于通义万相大模型 | 输入一句话，AI帮你画出来")
+st.caption("基于 Pollinations.ai 免费模型 | 输入一句话，AI帮你画出来")
 
 # 侧边栏：风格选择
 with st.sidebar:
@@ -33,6 +26,9 @@ with st.sidebar:
     st.divider()
     st.markdown("### 什么是 AIGC？")
     st.caption("AIGC（AI Generated Content）即人工智能生成内容。这个工具就是 AIGC 的典型应用——你用文字描述想法，AI 生成对应的图片。")
+    st.divider()
+    st.markdown("### 关于模型")
+    st.caption("使用 Pollinations.ai 免费文生图 API，无需付费，无需注册。")
 
 # 主区域：输入框
 col1, col2 = st.columns([3, 1])
@@ -68,46 +64,37 @@ if generate_btn:
 
         # 解析尺寸
         size_map = {
-            "1024×1024（正方形）": "1024*1024",
-            "720×1280（竖版）": "720*1280",
-            "1280×720（横版）": "1280*720"
+            "1024×1024（正方形）": (1024, 1024),
+            "720×1280（竖版）": (720, 1280),
+            "1280×720（横版）": (1280, 720)
         }
-        n_size = size_map[size_option]
+        width, height = size_map[size_option]
 
         with st.spinner("AI 正在作画，请稍等..."):
             try:
-                result = ImageSynthesis.call(
-                    model="wanx-v1",
-                    prompt=full_prompt,
-                    n=1,
-                    size=n_size
-                )
+                # Pollinations.ai 免费 API —— 无需 API Key
+                encoded_prompt = urllib.parse.quote(full_prompt)
+                api_url = f"https://pollinations.ai/p/{encoded_prompt}?width={width}&height={height}&nologo=true"
 
-                if result.status_code == 200 and result.output.results:
-                    # 下载生成的图片
-                    img_url = result.output.results[0].url
-                    img_response = requests.get(img_url)
-                    img_bytes = img_response.content
+                img_response = requests.get(api_url, timeout=120)
+                img_bytes = img_response.content
 
-                    # 展示图片
+                if len(img_bytes) > 100 and img_response.status_code == 200:
                     st.success("✅ 生成完成！")
                     st.image(img_bytes, caption=f"生成提示词：{prompt[:80]}...", use_container_width=True)
 
-                    # 下载按钮
                     st.download_button(
                         label="下载图片",
                         data=img_bytes,
                         file_name=f"aigc_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.png",
                         mime="image/png"
                     )
-
                 else:
-                    st.error(f"生成失败：{result.message if hasattr(result, 'message') else '请检查 API Key 是否正确'}")
+                    st.error("图片生成失败，请重试或换一个描述试试")
 
             except Exception as e:
                 st.error(f"请求出错：{str(e)[:100]}")
-                st.caption("💡 常见原因：1) API Key 无效或过期 2) 网络连接问题 3) 模型服务暂时不可用")
-
+                st.caption("💡 可能原因：1) 网络连接问题 2) 模型服务繁忙 3) 提示词包含敏感词被拦截")
 
 # ---------- 底部说明 ----------
 st.divider()
