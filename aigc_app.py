@@ -74,7 +74,7 @@ if generate_btn:
             try:
                 # Pollinations.ai 免费 API —— 无需 API Key
                 encoded_prompt = urllib.parse.quote(full_prompt)
-                api_url = f"https://pollinations.ai/p/{encoded_prompt}?width={width}&height={height}&nologo=true"
+                api_url = f"https://gen.pollinations.ai/image/{encoded_prompt}?model=flux"
 
                 img_response = requests.get(api_url, timeout=120)
                 img_bytes = img_response.content
